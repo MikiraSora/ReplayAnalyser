@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Dependency\**" />
+    <EmbeddedResource Remove="Dependency\**" />
+    <None Remove="Dependency\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="H:\osu-tools\osu\osu.Game.Rulesets.Osu\osu.Game.Rulesets.Osu.csproj" />
+    <ProjectReference Include="H:\osu-tools\osu\osu.Game\osu.Game.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="osuElements.Net">
+      <HintPath>Dependency\osuElements.Net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
