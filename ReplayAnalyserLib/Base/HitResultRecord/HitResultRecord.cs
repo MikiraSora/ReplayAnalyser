@@ -20,5 +20,7 @@ namespace ReplayAnalyserLib.Base.HitResultRecord
             TrigHitObject = @object;
             TrigMouseAction = action;
         }
+
+        public override string ToString() => $"{TrigHitObject.StartTime}({Math.Abs(TrigMouseAction.StartTime-TrigHitObject.StartTime)} {Result})";
     }
 }

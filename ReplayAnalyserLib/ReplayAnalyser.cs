@@ -129,9 +129,10 @@ namespace ReplayAnalyserLib
                 {
                     //从队列里面列举出时间范围内没被处理过的鼠标动作
                     var cond_actions = actions.Where(a=>
-                    Math.Abs(a.StartTime-obj.StartTime)<=miss_offset&&
-                    a.TriggedHitObject==null&&
-                    a.Contains(obj,a.StartTime));
+                    Math.Abs(a.StartTime-obj.StartTime)<=miss_offset&& //可击打时间范围内的
+                    a.TriggedHitObject==null&& //没被其他物件处理的
+                    a.Contains(obj,a.StartTime) //鼠标开始动作在物件内的
+                    );
 
                     list.AddRange(cond_actions);
                 }
