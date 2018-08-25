@@ -102,8 +102,6 @@ namespace ReplayAnalyserLib
         
         public static void Analyser(string osr_path,string osu_path)
         {
-            osuElements.Replays.Replay replay = new osuElements.Replays.Replay(osr_path, true);
-
             var beatmap = GetBeatmap(osu_path);
 
             ReplayDecoder decoder = new ReplayDecoder(osr_path, beatmap);
@@ -121,6 +119,7 @@ namespace ReplayAnalyserLib
 
             foreach (OsuHitObject obj in beatmap.HitObjects)
             {
+                //obj.HitWindows.SetDifficulty(beatmap.BeatmapInfo.BaseDifficulty.OverallDifficulty);
                 var miss_offset = obj.HitWindows.HalfWindowFor(osu.Game.Rulesets.Scoring.HitResult.Miss);
 
                 var list = new List<WrapperMouseAction>();
@@ -157,6 +156,7 @@ namespace ReplayAnalyserLib
                     //有击打结果了就绑定记录,钦定这个鼠标动作被这个物件接受了
                     select_action.TriggedHitObject = obj;
 
+                    //在ScoreV1中，没钦定滑条头的判定 https://osu.ppy.sh/forum/p/6784775 ,但还是加了，咕咕咕
                     HitResultRecord record = new HitResultRecord(hit_result, obj, select_action);
                     result_collection.AddResult(record);
                 }
