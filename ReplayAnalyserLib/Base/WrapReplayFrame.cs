@@ -55,5 +55,7 @@ namespace ReplayAnalyserLib.Base
             if (frame != null)
                 frame.NextFrame = this;
         }
+
+        public override string ToString() => $"time:{Time} pos:{Position} {(LeftButton ? "LEFT" : string.Empty)} {(RightButton ? "RIGHT" : string.Empty)}";
     }
 }

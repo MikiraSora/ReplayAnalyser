@@ -8,7 +8,7 @@ namespace ReplayAnalyserLib.Base
     {
         Click,
         Hold,
-        Release,
+        Release,//柑橘没啥卵用
         None
     }
 }
