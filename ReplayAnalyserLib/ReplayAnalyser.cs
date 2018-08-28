@@ -120,7 +120,7 @@ namespace ReplayAnalyserLib
             foreach (OsuHitObject obj in beatmap.HitObjects)
             {
                 //obj.HitWindows.SetDifficulty(beatmap.BeatmapInfo.BaseDifficulty.OverallDifficulty);
-                var miss_offset = obj.HitWindows.HalfWindowFor(osu.Game.Rulesets.Scoring.HitResult.Miss);
+                var miss_offset = obj.HitWindows.HalfWindowFor(HitResult.Miss);
 
                 var list = new List<WrapperMouseAction>();
                 
@@ -136,30 +136,7 @@ namespace ReplayAnalyserLib
                     list.AddRange(cond_actions);
                 }
 
-                var select_action=list.Min();
-
-                /*   |----0----| o  
-                 *        +    + + mouse_click
-                 *  hitobject  |
-                 *       miss_offset
-                 */
-                if (select_action.StartTime>obj.StartTime+ miss_offset)
-                {
-                    //物件没被击打，将被当做miss处理
-                    continue;
-                }
-
-                HitResult hit_result = obj.HitWindows.ResultFor(Math.Abs(select_action.StartTime - obj.StartTime));
-
-                if (hit_result!=HitResult.None) //HitResult.None是过于提前以至于没被当做击打
-                {
-                    //有击打结果了就绑定记录,钦定这个鼠标动作被这个物件接受了
-                    select_action.TriggedHitObject = obj;
-
-                    //在ScoreV1中，没钦定滑条头的判定 https://osu.ppy.sh/forum/p/6784775 ,但还是加了，咕咕咕
-                    HitResultRecord record = new HitResultRecord(hit_result, obj, select_action);
-                    result_collection.AddResult(record);
-                }
+                OsuHitObjectJudgement.Judge(obj, list,frames,result_collection,score);
             }
         }
     }

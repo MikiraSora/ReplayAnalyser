@@ -6,8 +6,8 @@ namespace ReplayAnalyserTestConsole
     {
         static void Main(string[] args)
         {
-            ReplayAnalyserLib.ReplayAnalyser.Analyser(@"G:\osu!\Replays\1.osr",
-                @"G:\osu!\Songs\83919 DJ TECHNORCH - Sol Cosine Job 2\DJ TECHNORCH - Sol Cosine Job 2 (ignorethis) [Hyper].osu");
+            ReplayAnalyserLib.ReplayAnalyser.Analyser(@"G:\osu!\Replays\DarkProjector - forget you [spinner test] (2018-08-27) Osu.osr",
+                @"G:\osu!\Songs\yuki - forget you\yuki - forget you\audio (DarkProjector) [spinner test].osu");
         }
     }
 }
