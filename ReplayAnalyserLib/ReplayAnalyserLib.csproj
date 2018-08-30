@@ -19,10 +19,4 @@
     <ProjectReference Include="H:\osu-tools\osu\osu.Game\osu.Game.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="osuElements.Net">
-      <HintPath>Dependency\osuElements.Net.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

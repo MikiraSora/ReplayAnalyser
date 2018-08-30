@@ -12,6 +12,7 @@ namespace ReplayAnalyserLib.Base
 {
     //记录转盘
     //尝试抄旧版屙屎的，咕咕
+    //8/28 操你妈算不对 先鸽着
     public class SpinnerCounter
     {
         private double lastMouseAngle;
@@ -38,6 +39,7 @@ namespace ReplayAnalyserLib.Base
         public bool IsRX { get; private set; }
         public bool IsDT { get; private set; }
         public bool IsSO { get; private set; }
+        public bool IsAP { get; private set; }
         public bool IsHT { get; private set; }
         public Spinner Spinner { get; }
         public double SpinnerRotationRatio { get; }
@@ -51,6 +53,7 @@ namespace ReplayAnalyserLib.Base
             IsRX = score.Mods.Any(m => m.ShortenedName == "RX");
             IsDT = score.Mods.Any(m => m.ShortenedName == "DT");
             IsSO = score.Mods.Any(m => m.ShortenedName == "SO");
+            IsAP = score.Mods.Any(m => m.ShortenedName == "AP");
             IsHT = score.Mods.Any(m => m.ShortenedName == "HT");
             Spinner = spinner;
 
@@ -137,18 +140,6 @@ namespace ReplayAnalyserLib.Base
             if (rotationCount != lastRotationCount)
             {
                 scoringRotationCount++;
-                /*
-                IncreaseScoreType score = IncreaseScoreType.Ignore;
-
-                if (scoringRotationCount > rotationRequirement + 3 && (scoringRotationCount - (rotationRequirement + 3)) % 2 == 0)
-                {
-                    score = IncreaseScoreType.SpinnerBonus;
-                else if (scoringRotationCount > 1 && scoringRotationCount % 2 == 0)
-                    score = IncreaseScoreType.SpinnerSpinPoints;
-                else if (scoringRotationCount > 1)
-                    score = IncreaseScoreType.SpinnerSpin;
-                AddBound(score);
-                */
                 lastRotationCount = rotationCount;
 
             }
@@ -159,7 +150,7 @@ namespace ReplayAnalyserLib.Base
             var elapsed_frame_time = 0d;
 
             var last_frame = RecordFrames.LastOrDefault();
-            elapsed_frame_time = last_frame?.PreviousFrame == null ? SIXTY_FRAME_TIME/*0*/ : last_frame.Time - last_frame.PreviousFrame.Time;
+            elapsed_frame_time = last_frame?.PreviousFrame == null ? SIXTY_FRAME_TIME : last_frame.Time - last_frame.PreviousFrame.Time;
 
             double decay = Math.Pow(0.9, elapsed_frame_time / SIXTY_FRAME_TIME);
             rpm = rpm * decay + (1.0 - decay) * (Math.Abs(velocityCurrent) * 1000) / (Math.PI * 2) * 60;
@@ -167,7 +158,7 @@ namespace ReplayAnalyserLib.Base
             // Mod time is applied here to keep discrepancies between DT, HT and nomod to preserve integrity of older scores. :(
             double maxAccelThisFrame = ApplyModsToTime(maxAccel * elapsed_frame_time);
 
-            if (IsSO || /*Player.Relaxing2*/IsRX)
+            if (IsSO || IsRX)
                 velocityCurrent = 0.03;
             else if (velocityTheoretical > velocityCurrent)
                 velocityCurrent += Math.Min(velocityTheoretical - velocityCurrent, velocityCurrent < 0 && IsRX ? maxAccelThisFrame / RELAX_BONUS_ACCEL : maxAccelThisFrame);
@@ -262,38 +253,16 @@ namespace ReplayAnalyserLib.Base
 
     }
 
-    /*lazer看上去和普通屙屎那个实现不同，不敢用
+        /*
     public class SpinnerCounter
     {
         private readonly Spinner spinner;
-
-        private const float idle_alpha = 0.2f;
-        private const float tracking_alpha = 0.4f;
-
-        public bool IsPresent => true; // handle input when hidden
 
         public SpinnerCounter(Spinner s)
         {
             spinner = s;
         }
-
-        public bool ReceiveMouseInputAt(Vector2 screenSpacePos) => true;
         
-        public bool Tracking { get; set; }
-
-        private bool complete;
-        public bool Complete
-        {
-            get { return complete; }
-            set
-            {
-                if (value == complete) return;
-                complete = value;
-
-                updateCompleteTick();
-            }
-        }
-
         public float Rotation { get; set; }
 
         private float lastAngle;
@@ -305,13 +274,13 @@ namespace ReplayAnalyserLib.Base
 
         private bool rotationTransferred = false;
 
-        public void Update(/*Vector2 mousePosition/WrapReplayFrame frame)
+        public void Update(WrapReplayFrame frame)
         {
-            var mousePosition = frame.Position;
+            var mousePosition = frame.Position-new Vector2(320,240);
 
-            var thisAngle = -(float)MathHelper.RadiansToDegrees(Math.Atan2(mousePosition.X /*- DrawSize.X / 2/, mousePosition.Y /*- DrawSize.Y / 2/));
+            var thisAngle = -(float)MathHelper.RadiansToDegrees(Math.Atan2(mousePosition.X, mousePosition.Y));
 
-            bool validAndTracking = Tracking && spinner.StartTime <= frame.Time && spinner.EndTime > frame.Time;
+            bool validAndTracking = spinner.StartTime <= frame.Time && spinner.EndTime > frame.Time;
 
             if (validAndTracking)
             {
@@ -331,12 +300,7 @@ namespace ReplayAnalyserLib.Base
             }
 
             lastAngle = thisAngle;
-
-            if (Complete && updateCompleteTick())
-            {
-                //转盘完成，但源实现是UI操作所以在此没啥卵用
-            }
         }
     }
-*/
+    */
 }

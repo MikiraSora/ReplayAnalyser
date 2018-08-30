@@ -117,26 +117,17 @@ namespace ReplayAnalyserLib
 
             Console.WriteLine($"left:{left} right:{right}");
 
+            JudgementParam judgement_param = new JudgementParam()
+            {
+                Score=score,
+                RawFrames=frames,
+                MouseActions=mouse_actions,
+                ResultCollection=result_collection
+            };
+
             foreach (OsuHitObject obj in beatmap.HitObjects)
             {
-                //obj.HitWindows.SetDifficulty(beatmap.BeatmapInfo.BaseDifficulty.OverallDifficulty);
-                var miss_offset = obj.HitWindows.HalfWindowFor(HitResult.Miss);
-
-                var list = new List<WrapperMouseAction>();
-                
-                foreach (var actions in mouse_actions.Values)
-                {
-                    //从队列里面列举出时间范围内没被处理过的鼠标动作
-                    var cond_actions = actions.Where(a=>
-                    Math.Abs(a.StartTime-obj.StartTime)<=miss_offset&& //可击打时间范围内的
-                    a.TriggedHitObject==null&& //没被其他物件处理的
-                    a.Contains(obj,a.StartTime) //鼠标开始动作在物件内的
-                    );
-
-                    list.AddRange(cond_actions);
-                }
-
-                OsuHitObjectJudgement.Judge(obj, list,frames,result_collection,score);
+                OsuHitObjectJudgement.Judge(obj,judgement_param);
             }
         }
     }
