@@ -15,6 +15,7 @@ using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.Scoring.Legacy;
 using ReplayAnalyserLib.Base;
 using ReplayAnalyserLib.Base.HitResultRecord;
+using ReplayAnalyserLib.Judgement;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,6 +33,8 @@ namespace ReplayAnalyserLib
 
             var osu_converter = new OsuBeatmapConverter(beatmap);
             var converter_beatmap = osu_converter.Convert();
+
+            PreprocessHitObjects(converter_beatmap.HitObjects);
 
             //mumally parse
             foreach (var hitObject in converter_beatmap.HitObjects)
@@ -98,6 +101,14 @@ namespace ReplayAnalyserLib
             }
 
             return dic;
+        }
+
+        public static void PreprocessHitObjects(IEnumerable<HitObject> objects)
+        {
+            foreach (var obj in objects)
+            {
+                obj.HitWindows = new LengacyHitWindow();
+            }
         }
         
         public static void Analyser(string osr_path,string osu_path)

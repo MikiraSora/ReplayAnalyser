@@ -23,6 +23,8 @@ namespace ReplayAnalyserLib.Base
 
         public int CompareTo(WrapperMouseAction other) => Math.Sign(StartTime - other.StartTime);
 
+        bool l = false;
+
         /// <summary>
         /// 判断某时刻指针是否在某物件上
         /// </summary>
@@ -31,7 +33,16 @@ namespace ReplayAnalyserLib.Base
         /// <returns></returns>
         public bool Contains(OsuHitObject obj, double time,double? judgement_radius=null)
         {
+            if (obj.StartTime==10752)
+            {
+
+            }
+
             var frame = Frames.LastOrDefault(f => time >= f.Time);
+
+            if (frame==null)
+                frame = Frames.First().PreviousFrame;
+
             var next_frame = frame?.NextFrame;
 
             if (next_frame == null)

@@ -21,6 +21,18 @@ namespace ReplayAnalyserLib.Base.HitResultRecord
             TrigMouseAction = action;
         }
 
-        public override string ToString() => $"{TrigHitObject.StartTime}({Math.Abs(TrigMouseAction.StartTime-TrigHitObject.StartTime)} {Result})";
+        public override string ToString() {
+            switch (TrigHitObject)
+            {
+                case HitCircle _:
+                    return $"{TrigHitObject.StartTime}({Math.Abs(TrigMouseAction.StartTime - TrigHitObject.StartTime)} {Result})";
+                case Slider slider:
+                    return $"{slider.StartTime}~{slider.EndTime:F0} ({Result})";
+                case Spinner spinner:
+                    return $"{spinner.StartTime}~{spinner.EndTime:F0} ({Result})";
+                default:
+                    return "咕咕";
+            }
+        }
     }
 }

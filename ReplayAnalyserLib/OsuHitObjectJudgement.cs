@@ -1,4 +1,5 @@
-﻿using osu.Game.Rulesets.Osu;
+﻿using osu.Game.Rulesets.Objects;
+using osu.Game.Rulesets.Osu;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.Objects.Drawables.Pieces;
 using osu.Game.Rulesets.Scoring;
@@ -7,6 +8,7 @@ using ReplayAnalyserLib.Base.HitResultRecord;
 using ReplayAnalyserLib.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -41,10 +43,17 @@ namespace ReplayAnalyserLib
 
         public static void Judge(HitCircle obj, JudgementParam param)
         {
+            if (obj.StartTime==10752)
+            {
+
+            }
+
             //obj.HitWindows.SetDifficulty(beatmap.BeatmapInfo.BaseDifficulty.OverallDifficulty);
             var miss_offset = obj.HitWindows.HalfWindowFor(HitResult.Miss);
 
             var list = new List<WrapperMouseAction>();
+
+            var hitobject_radius = CalculateHitObjectRadius(param);
 
             foreach (var actions in param.MouseActions.Values)
             {
@@ -52,7 +61,7 @@ namespace ReplayAnalyserLib
                 var cond_actions = actions.Where(a =>
                 Math.Abs(a.StartTime - obj.StartTime) <= miss_offset && //可击打时间范围内的
                 a.TriggedHitObject == null && //没被其他物件处理的
-                a.Contains(obj, a.StartTime) //鼠标开始动作在物件内的
+                a.Contains(obj, obj.StartTime, hitobject_radius) //鼠标开始动作在物件内的
                 );
 
                 list.AddRange(cond_actions);
@@ -65,13 +74,14 @@ namespace ReplayAnalyserLib
              *  hitobject  |
              *       miss_offset
              */
-            if (select_action.StartTime > obj.StartTime + miss_offset)
+            if (select_action==null||select_action.StartTime > obj.StartTime + miss_offset)
             {
                 //物件没被击打，将被当做miss处理
                 return;
             }
 
-            HitResult hit_result = obj.HitWindows.ResultFor(Math.Abs(select_action.StartTime - obj.StartTime));
+            var hit_offset = Math.Abs(select_action.StartTime - obj.StartTime);
+            var hit_result = obj.HitWindows.ResultFor(hit_offset);
 
             if (hit_result != HitResult.None) //HitResult.None是过于提前以至于没被当做击打
             {
@@ -81,7 +91,7 @@ namespace ReplayAnalyserLib
 
         #region Slider
 
-        private static float GetFollowCircleDistance(JudgementParam param)
+        private static float CalculateHitObjectRadius(JudgementParam param)
         {
             var mods = param.Score.Mods;
             var cs = param.Score.Beatmap.BaseDifficulty.CircleSize;
@@ -106,6 +116,8 @@ namespace ReplayAnalyserLib
                 list.AddRange(cond_actions);
             }
 
+            list.Sort();
+
             //过滤一开始连续已经处理的鼠标动作,那列表第一个鼠标动作便是要钦定滑条头
             list.SkipWhile(a => a.TriggedHitObject != null);
 
@@ -113,7 +125,8 @@ namespace ReplayAnalyserLib
             List<(OsuHitObject obj, HitResult result,WrapperMouseAction action)> hit_results = new List<(OsuHitObject obj, HitResult result, WrapperMouseAction action)>();
 
             //跟踪圈大小
-            var track_radius = GetFollowCircleDistance(param) * 2.4f;
+            var hitobject_radius = CalculateHitObjectRadius(param);
+            var track_radius = hitobject_radius * 2.4f;
 
             /*
              Sliders have an end, a beginning and ticks. 
@@ -150,7 +163,10 @@ namespace ReplayAnalyserLib
                         break;
                    /*少一个head就当Miss*/
                     case SliderCircle head:
-                        var c = list.Where(r => r.Contains(sub_object, sub_object.StartTime)).FirstOrDefault();
+                        var c = list.Where(r => r.Contains(sub_object, r.StartTime, hitobject_radius)).FirstOrDefault();
+
+                        //钦定一下
+                        c.TriggedHitObject = slider;
 
                         hit_results.Add((head, c == null ? HitResult.Miss : HitResult.Great,c));
                         break;
@@ -164,8 +180,34 @@ namespace ReplayAnalyserLib
                 }
             }
 
+            /*少一个head就当Miss,在ScoreV1中，滑条头不计入判断，也就是说滑条头要不就是300，要不就是Miss*/
 
-            /*少一个head就当Miss,在ScoreV1中，滑条头不计入判断，也就是说要不就是300，要不就是Miss*/
+            Func<HitObject,bool> filter_func = p => !(p is SliderTailCircle);
+
+            //如果滑条尾之外的物件有Miss,或者没处理的，一律Miss
+            if (hit_results.Where(p => !(p.obj is SliderTailCircle)).Any(hit => hit.result == HitResult.Miss) || 
+                slider.NestedHitObjects.Where(filter_func).Except(
+                    hit_results.Select(p => p.obj).Where(filter_func)
+                    ).Any())
+            {
+                param.ResultCollection.AddResult(new HitResultRecord(HitResult.Miss,slider,null));
+                return;
+            }
+
+
+            var tail_result = hit_results.FirstOrDefault(p => p.obj is SliderTailCircle);
+            if (tail_result.obj == null)
+            {
+                param.ResultCollection.AddResult(new HitResultRecord(HitResult.Miss, slider, null));
+                return;
+            }
+
+            param.ResultCollection.AddResult(new HitResultRecord(tail_result.result, slider, null));
+
+            /*断尾
+            if (tail_result.result == HitResult.Good)
+                param.ResultCollection.AddResult(new HitResultRecord(HitResult.Miss, slider, null));
+                */
         }
 
         #endregion
@@ -197,6 +239,8 @@ namespace ReplayAnalyserLib
                 action.TriggedHitObject = hit_object;
             HitResultRecord record = new HitResultRecord(reuslt, hit_object, action);
             result_collection.AddResult(record);
+
+            Debug.WriteLine($"Apply hit:{record}");
         }
     }
 }
